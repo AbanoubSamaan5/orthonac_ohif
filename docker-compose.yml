@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  flask_api:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - orthanc
+    environment:
+      - FLASK_ENV=production
+
+  orthanc:
+    image: jodogne/orthanc-plugins
+    ports:
+      - "8042:8042"
+      - "4242:4242"
+    environment:
+      ORTHANC__REGISTERED_USERS: '{"orthanc": "orthanc"}'
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+    volumes:
+      - orthanc_data:/var/lib/orthanc
+
+  ohif:
+    image: ohif/viewer
+    ports:
+      - "3000:80"
+    environment:
+      - PUBLIC_DICOMWEB_URL=http://orthanc:8042/dicom-web
+      - STUDY_LIST_HIDE=true
+      - MODE=lite
+
+volumes:
+  orthanc_data:
